@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
-from artworks.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title
 from .viewsets import ListCreateDestroyViewSet, PermissionsGrantMixin
 from .serializers import CategorySerializer, TitleSerializer, GenreSerializer
 

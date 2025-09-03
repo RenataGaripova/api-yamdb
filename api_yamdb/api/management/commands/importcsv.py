@@ -4,7 +4,7 @@ import os
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from artworks.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title
 
 
 class Command(BaseCommand):
@@ -12,6 +12,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         csv_files = (
+            os.path.join(settings.BASE_DIR, 'static/data/category.csv'),
+            os.path.join(settings.BASE_DIR, 'static/data/genre.csv'),
             os.path.join(settings.BASE_DIR, 'static/data/titles.csv'),
         )
 
