@@ -4,7 +4,7 @@ from rest_framework.mixins import (
     DestroyModelMixin
 )
 from rest_framework import permissions
-
+from rest_framework import filters
 from rest_framework.viewsets import GenericViewSet
 
 
@@ -16,7 +16,8 @@ class ListCreateDestroyViewSet(
 ):
     """Миксин для получения списка объектов, создания и удаления объекта."""
 
-    pass
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class PermissionsGrantMixin:
