@@ -2,10 +2,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 
-from api.viewsets import ListCreateDestroyViewSet, PermissionsGrantMixin
 from api.serializers import (
     CategorySerializer, TitleSerializer, GenreSerializer,
     ReviewSerializer, CommentSerializer
+)
+from api.viewsets import (
+    ListCreateDestroyViewSet, PermissionsGrantMixin,
+    ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
 )
 from reviews.models import Category, Genre, Title, Comment, Review
 
@@ -30,7 +33,12 @@ class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     filterset_fields = ['category', 'genre', 'name', 'year']
 
 
-class ReviewViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
+class ReviewViewSet(
+    ReadOnlyMixin,
+    AuthenticatedCreateMixin,
+    OwnerModeratorAdminEditMixin,
+    viewsets.ModelViewSet
+):
     """ViewSet, реализующий CRUD к модели Review."""
     serializer_class = ReviewSerializer
 
@@ -47,7 +55,12 @@ class ReviewViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
+class CommentViewSet(
+    ReadOnlyMixin,
+    AuthenticatedCreateMixin,
+    OwnerModeratorAdminEditMixin,
+    viewsets.ModelViewSet
+):
     """ViewSet, реализующий CRUD к модели Comment."""
     serializer_class = CommentSerializer
 

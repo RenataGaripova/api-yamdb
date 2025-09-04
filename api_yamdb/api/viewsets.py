@@ -7,6 +7,12 @@ from rest_framework import permissions
 from rest_framework import filters
 from rest_framework.viewsets import GenericViewSet
 
+from users.permissions import (
+    IsAdmin,
+    IsModerator,
+    IsOwnerOrReadOnly
+)
+
 
 class ListCreateDestroyViewSet(
     GenericViewSet,
@@ -29,3 +35,30 @@ class PermissionsGrantMixin:
         else:
             permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]
+
+
+class ReadOnlyMixin:
+    """Только чтение для всех"""
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
+
+class AuthenticatedCreateMixin:
+    """Аутентифицированные пользователи могут создавать"""
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+
+class OwnerModeratorAdminEditMixin:
+    """Владельцы, модераторы и админы могут редактировать/удалять"""
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [
+                permissions.IsAuthenticated(),
+                IsOwnerOrReadOnly | IsModerator | IsAdmin
+            ]
+        return super().get_permissions()
