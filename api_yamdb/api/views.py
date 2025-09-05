@@ -77,6 +77,15 @@ class CommentViewSet(
     serializer_class = CommentSerializer
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        elif self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsOwnerOrModeratorOrAdmin()]
+        return [permissions.IsAuthenticated()]
+
     def get_review(self):
         review_id = self.kwargs.get('review_id')
         return get_object_or_404(Review, id=review_id)
