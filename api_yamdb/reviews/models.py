@@ -18,7 +18,7 @@ class BaseModel(models.Model):
 class Category(BaseModel):
     """Модель категории."""
 
-    slug = models.SlugField(verbose_name='Слаг')
+    slug = models.SlugField(unique=True, verbose_name='Слаг')
 
     class Meta:
         verbose_name = 'категория'
@@ -28,7 +28,7 @@ class Category(BaseModel):
 class Genre(BaseModel):
     """Модель жанра."""
 
-    slug = models.SlugField(verbose_name='Слаг')
+    slug = models.SlugField(unique=True, verbose_name='Слаг')
 
     class Meta:
         verbose_name = 'жанр'
@@ -41,15 +41,9 @@ class Title(BaseModel):
     year = models.IntegerField(verbose_name='Год выпуска')
     rating = models.IntegerField(default=1, verbose_name='Рейтинг')
     description = models.TextField(verbose_name='Описание')
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.SET_NULL,
-        verbose_name='Жанр',
-        null=True,
-        blank=True,
-    )
+    genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
-        Category,
+        to=Category,
         on_delete=models.SET_NULL,
         verbose_name='Категория',
         null=True,

@@ -1,6 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
 from api.serializers import (
     CategorySerializer, TitleSerializer, GenreSerializer,
@@ -31,6 +32,7 @@ class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ['category', 'genre', 'name', 'year']
+    pagination_class = PageNumberPagination
 
 
 class ReviewViewSet(

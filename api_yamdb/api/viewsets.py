@@ -6,6 +6,7 @@ from rest_framework.mixins import (
 from rest_framework import permissions
 from rest_framework import filters
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.pagination import PageNumberPagination
 
 from users.permissions import (
     IsAdmin,
@@ -24,6 +25,8 @@ class ListCreateDestroyViewSet(
 
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    pagination_class = PageNumberPagination
+    lookup_field = 'slug'
 
 
 class PermissionsGrantMixin:
