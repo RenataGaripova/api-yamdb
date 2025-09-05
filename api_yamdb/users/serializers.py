@@ -3,7 +3,6 @@ from rest_framework.exceptions import NotFound
 from .models import CustomUser
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db.models import Q
 import random
 import string
 
