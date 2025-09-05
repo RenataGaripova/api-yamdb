@@ -1,57 +1,81 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 from .models import CustomUser
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
+import random
+import string
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=254)
+
     class Meta:
         model = CustomUser
         fields = ('email', 'username')
 
-    def validate(self, data):
-        email = data.get('email')
-        username = data.get('username')
-
-        if CustomUser.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует.'
-            )
-
-        if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует.'
-            )
-
-        return data
-
     def validate_username(self, value):
+        import re
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, value):
+            raise serializers.ValidationError(
+                'Username может содержать только буквы, цифры и @/./+/-/_'
+            )
         if value.lower() == 'me':
             raise serializers.ValidationError(
                 'Использовать имя "me" в качестве username запрещено.'
             )
         return value
 
-    def create(self, validated_data):
-        import random
-        import string
+    def validate(self, data):
+        email = data.get('email')
+        username = data.get('username')
+        user_by_email = CustomUser.objects.filter(email=email).first()
+        user_by_username = CustomUser.objects.filter(username=username).first()
 
+        if user_by_email and user_by_username:
+            if user_by_email != user_by_username:
+                raise serializers.ValidationError(
+                    'Пользователь с таким email уже существует.'
+                )
+
+        if user_by_email and not user_by_username:
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует.'
+            )
+
+        if user_by_username and not user_by_email:
+            raise serializers.ValidationError(
+                'Пользователь с таким username уже существует.'
+            )
+
+        self.context['existing_user'] = user_by_email or user_by_username
+
+        return data
+
+    def create(self, validated_data):
         email = validated_data['email']
         username = validated_data['username']
 
-        user, created = CustomUser.objects.get_or_create(
-            email=email,
-            username=username,
-            defaults={'confirmation_code': ''.join(random.choices(
-                string.ascii_letters + string.digits, k=10
-            ))}
-        )
+        user = self.context.get('existing_user')
 
-        if not created:
-            user.confirmation_code = ''.join(random.choices(
-                string.ascii_letters + string.digits, k=10
-            ))
-            user.save()
+        if user:
+            user.email = email
+            user.username = username
+            user.is_active = False
+        else:
+            user = CustomUser.objects.create(
+                username=username,
+                email=email,
+                is_active=False
+            )
+
+        user.confirmation_code = ''.join(
+            random.choices(string.ascii_letters + string.digits, k=10)
+        )
+        user.save()
 
         send_mail(
             subject='Код подтверждения',
@@ -60,6 +84,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             recipient_list=[user.email],
             fail_silently=False,
         )
+
         return user
 
 
@@ -78,10 +103,7 @@ class TokenSerializer(serializers.Serializer):
                 return data
             raise serializers.ValidationError('Неверный код подтверждения.')
         except CustomUser.DoesNotExist:
-            raise serializers.ValidationError(
-                {'detail': 'Пользователь с таким username не найден.'},
-                code=status.HTTP_404_NOT_FOUND
-            )
+            raise NotFound('Пользователь с таким username не найден.')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -92,12 +114,38 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role'
         )
 
+    def validate_username(self, value):
+        import re
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, value):
+            raise serializers.ValidationError(
+                'Username может содержать только буквы, цифры и @/./+/-/_'
+            )
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя "me" в качестве username запрещено.'
+            )
+        return value
+
 
 class UserMeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
             'username', 'email', 'first_name',
-            'last_name', 'bio'
+            'last_name', 'bio', 'role'
         )
         read_only_fields = ('role',)
+
+    def validate_username(self, value):
+        import re
+        pattern = r'^[\w.@+-]+\Z'
+        if not re.match(pattern, value):
+            raise serializers.ValidationError(
+                'Username может содержать только буквы, цифры и @/./+/-/_'
+            )
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя "me" в качестве username запрещено.'
+            )
+        return value
