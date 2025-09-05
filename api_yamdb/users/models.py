@@ -3,6 +3,7 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
+    """Кастомная модель пользователя."""
 
     class Role(models.TextChoices):
         USER = 'user', 'Пользователь'

@@ -8,6 +8,7 @@ import string
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации новых пользователей."""
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField(max_length=254)
 
@@ -88,6 +89,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
+    """Сериализатор для получения JWT-токена."""
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
@@ -106,6 +108,7 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с пользователями."""
     class Meta:
         model = CustomUser
         fields = (
@@ -128,6 +131,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы со своим профилем."""
     class Meta:
         model = CustomUser
         fields = (
