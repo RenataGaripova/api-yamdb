@@ -33,7 +33,7 @@ class PermissionsGrantMixin:
         if self.action == 'list' or self.action == 'retrieve':
             permission_classes = [permissions.AllowAny]
         else:
-            permission_classes = [permissions.IsAdminUser]
+            permission_classes = [IsAdmin]
         return [permission() for permission in permission_classes]
 
 
