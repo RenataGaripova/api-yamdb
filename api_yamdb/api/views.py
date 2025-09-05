@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 
@@ -12,6 +12,7 @@ from api.viewsets import (
     ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
 )
 from reviews.models import Category, Genre, Title, Comment, Review
+from users.permissions import IsOwnerOrModeratorOrAdmin
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
@@ -33,17 +34,24 @@ class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ['category', 'genre', 'name', 'year']
     pagination_class = PageNumberPagination
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
 
 class ReviewViewSet(
-    ReadOnlyMixin,
-    AuthenticatedCreateMixin,
-    OwnerModeratorAdminEditMixin,
     viewsets.ModelViewSet
 ):
     """ViewSet, реализующий CRUD к модели Review."""
     serializer_class = ReviewSerializer
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        elif self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsOwnerOrModeratorOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
