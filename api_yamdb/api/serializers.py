@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -22,6 +23,7 @@ class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор произведений."""
     category = serializers.StringRelatedField()
     genre = serializers.StringRelatedField()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -33,8 +35,11 @@ class TitleSerializer(serializers.ModelSerializer):
             'description',
             'genre',
             'category',
-            'genre'
         )
+
+    def get_rating(self, obj):
+        avg_rating = obj.reviews.aggregate(Avg('score'))['score__avg']
+        return avg_rating if avg_rating is not None else None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -50,6 +55,16 @@ class ReviewSerializer(serializers.ModelSerializer):
             'score',
             'pub_date'
         )
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            title = self.context['view'].get_title()
+            user = self.context['request'].user
+            if Review.objects.filter(author=user, title=title).exists():
+                raise serializers.ValidationError(
+                    'Вы уже оставляли отзыв на это произведение'
+                )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

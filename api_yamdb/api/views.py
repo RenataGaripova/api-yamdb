@@ -43,6 +43,7 @@ class ReviewViewSet(
 ):
     """ViewSet, реализующий CRUD к модели Review."""
     serializer_class = ReviewSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -64,7 +65,9 @@ class CommentViewSet(
     viewsets.ModelViewSet
 ):
     """ViewSet, реализующий CRUD к модели Comment."""
+
     serializer_class = CommentSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
@@ -72,10 +75,10 @@ class CommentViewSet(
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        review_id = self.get_review()
+        review_id = self.kwargs.get('review_id')
         return Comment.objects.filter(
-            review__id=review_id,
-            review__title__id=title_id
+            review_id=review_id,
+            review__title_id=title_id
         )
 
     def perform_create(self, serializer):

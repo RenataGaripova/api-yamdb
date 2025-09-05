@@ -7,6 +7,7 @@ from rest_framework import permissions
 from rest_framework import filters
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import OR
 
 from users.permissions import (
     IsAdmin,
@@ -62,6 +63,6 @@ class OwnerModeratorAdminEditMixin:
         if self.action in ['update', 'partial_update', 'destroy']:
             return [
                 permissions.IsAuthenticated(),
-                IsOwnerOrReadOnly | IsModerator | IsAdmin
+                OR(OR(IsOwnerOrReadOnly, IsModerator), IsAdmin)
             ]
         return super().get_permissions()

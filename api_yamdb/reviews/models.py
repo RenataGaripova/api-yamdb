@@ -93,6 +93,12 @@ class Review(BaseModel):
         verbose_name_plural = 'Отзывы'
         ordering = ['-pub_date']
         default_related_name = 'reviews'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review_per_author'
+            )
+        ]
 
     def __str__(self):
         return self.text[:REVIEW_STR_LENGTH]
