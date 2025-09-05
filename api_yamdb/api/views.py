@@ -12,7 +12,7 @@ from api.viewsets import (
     ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
 )
 from reviews.models import Category, Genre, Title, Comment, Review
-from users.permissions import IsOwnerOrModeratorOrAdmin
+from users.permissions import IsOwnerOrModeratorOrAdmin, IsAdmin
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
