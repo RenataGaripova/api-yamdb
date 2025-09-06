@@ -3,6 +3,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 
+from api.filters import TitleFilter
 from api.serializers import (
     CategorySerializer, TitleSerializer, GenreSerializer,
     ReviewSerializer, CommentSerializer
@@ -12,7 +13,7 @@ from api.viewsets import (
     ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
 )
 from reviews.models import Category, Genre, Title, Comment, Review
-from users.permissions import IsOwnerOrModeratorOrAdmin, IsAdmin
+from users.permissions import IsOwnerOrModeratorOrAdmin
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
@@ -32,7 +33,7 @@ class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ['category', 'genre', 'name', 'year']
+    filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 

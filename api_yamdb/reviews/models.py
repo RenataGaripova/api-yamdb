@@ -5,6 +5,7 @@ from reviews.constants import COMMENT_STR_LENGTH, REVIEW_STR_LENGTH
 
 
 class BaseModel(models.Model):
+    """Абстрактная модель с именем."""
     name = models.CharField(max_length=256, verbose_name='Название')
 
     def __str__(self):

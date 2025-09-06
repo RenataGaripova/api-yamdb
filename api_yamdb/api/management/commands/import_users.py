@@ -7,7 +7,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Imports users data from csv files."
+    help = "Импортирует пользователей."
 
     def handle(self, *args, **kwargs):
         with open('static/data/users.csv', mode='r') as file:

@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Imports genres, categories and titles data from csv files."
+    help = "Импортирует категории."
 
     def handle(self, *args, **kwargs):
         with open('static/data/category.csv', mode='r') as file:
