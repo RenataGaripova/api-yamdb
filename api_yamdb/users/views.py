@@ -12,6 +12,7 @@ from .models import CustomUser
 
 
 class SignUpView(APIView):
+    """API View для регистрации новых пользователей."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -22,6 +23,7 @@ class SignUpView(APIView):
 
 
 class TokenView(APIView):
+    """API View для получения JWT-токена."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -33,10 +35,12 @@ class TokenView(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления пользователями."""
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         queryset = super().get_queryset()

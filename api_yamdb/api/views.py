@@ -1,13 +1,19 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
-from api.viewsets import ListCreateDestroyViewSet, PermissionsGrantMixin
+from api.filters import TitleFilter
 from api.serializers import (
     CategorySerializer, TitleSerializer, GenreSerializer,
     ReviewSerializer, CommentSerializer
 )
+from api.viewsets import (
+    ListCreateDestroyViewSet, PermissionsGrantMixin,
+    ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
+)
 from reviews.models import Category, Genre, Title, Comment, Review
+from users.permissions import IsOwnerOrModeratorOrAdmin
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
@@ -27,12 +33,26 @@ class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ['category', 'genre', 'name', 'year']
+    filterset_class = TitleFilter
+    pagination_class = PageNumberPagination
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
 
-class ReviewViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
+class ReviewViewSet(
+    viewsets.ModelViewSet
+):
     """ViewSet, реализующий CRUD к модели Review."""
     serializer_class = ReviewSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        elif self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsOwnerOrModeratorOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -47,9 +67,25 @@ class ReviewViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
+class CommentViewSet(
+    ReadOnlyMixin,
+    AuthenticatedCreateMixin,
+    OwnerModeratorAdminEditMixin,
+    viewsets.ModelViewSet
+):
     """ViewSet, реализующий CRUD к модели Comment."""
+
     serializer_class = CommentSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        elif self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsOwnerOrModeratorOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
@@ -57,10 +93,10 @@ class CommentViewSet(viewsets.ModelViewSet, PermissionsGrantMixin):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        review_id = self.get_review()
+        review_id = self.kwargs.get('review_id')
         return Comment.objects.filter(
-            review__id=review_id,
-            review__title__id=title_id
+            review_id=review_id,
+            review__title_id=title_id
         )
 
     def perform_create(self, serializer):
