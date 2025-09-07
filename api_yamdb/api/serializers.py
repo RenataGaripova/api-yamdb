@@ -91,6 +91,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        if 'score' not in data:
+            raise serializers.ValidationError({
+                'score': 'Это поле обязательно'
+            })
+
         if self.context['request'].method == 'POST':
             title = self.context['view'].get_title()
             user = self.context['request'].user
