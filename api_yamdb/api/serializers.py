@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from django.db.models import Avg
@@ -56,6 +58,22 @@ class TitleSerializer(serializers.ModelSerializer):
         )
         data["genre"] = GenreSerializer(instance.genre.all(), many=True).data
         return data
+
+    def validate_year(self, value):
+        """Проверка года, переданного в запросе."""
+        if value > datetime.now().year:
+            raise serializers.ValidationError(
+                "Год выпуска не может превышать текущий."
+            )
+        return value
+
+    def validate_genre(self, value):
+        """Проверка списка жанров, переданного в запросе."""
+        if value == []:
+            raise serializers.ValidationError(
+                "Список жанров пуст."
+            )
+        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
