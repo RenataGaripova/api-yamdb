@@ -63,6 +63,6 @@ class OwnerModeratorAdminEditMixin:
         if self.action in ['update', 'partial_update', 'destroy']:
             return [
                 permissions.IsAuthenticated(),
-                OR(OR(IsOwnerOrReadOnly, IsModerator), IsAdmin)
+                OR(OR(IsOwnerOrReadOnly(), IsModerator()), IsAdmin())
             ]
         return super().get_permissions()
