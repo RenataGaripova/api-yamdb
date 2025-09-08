@@ -5,14 +5,20 @@ from rest_framework.pagination import PageNumberPagination
 
 from api.filters import TitleFilter
 from api.serializers import (
-    CategorySerializer, TitleSerializer, GenreSerializer,
-    ReviewSerializer, CommentSerializer
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleSerializer,
 )
 from api.viewsets import (
-    ListCreateDestroyViewSet, PermissionsGrantMixin,
-    ReadOnlyMixin, AuthenticatedCreateMixin, OwnerModeratorAdminEditMixin
+    AuthenticatedCreateMixin,
+    ListCreateDestroyViewSet,
+    OwnerModeratorAdminEditMixin,
+    PermissionsGrantMixin,
+    ReadOnlyMixin,
 )
-from reviews.models import Category, Genre, Title, Comment, Review
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):

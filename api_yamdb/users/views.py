@@ -1,14 +1,17 @@
-from rest_framework import status, permissions, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from .serializers import (
-    SignUpSerializer, TokenSerializer,
-    UserSerializer, UserMeSerializer
-)
-from .permissions import IsAdmin
+
 from .models import CustomUser
+from .permissions import IsAdmin
+from .serializers import (
+    SignUpSerializer,
+    TokenSerializer,
+    UserMeSerializer,
+    UserSerializer,
+)
 
 
 class SignUpView(APIView):

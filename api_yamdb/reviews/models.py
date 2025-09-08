@@ -83,10 +83,11 @@ class Review(BaseModel):
         help_text='Дата и время создания комментария'
     )
     score = models.IntegerField(
-        default=1,
         choices=((i, i) for i in range(1, 11)),
         verbose_name='оценка',
-        help_text='Оценка произведения'
+        help_text='Оценка произведения',
+        blank=False,
+        null=False
     )
 
     class Meta:

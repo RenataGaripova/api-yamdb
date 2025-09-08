@@ -2,9 +2,10 @@ from datetime import datetime
 
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
+
 from django.db.models import Avg
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -90,15 +91,19 @@ class ReviewSerializer(serializers.ModelSerializer):
             'pub_date'
         )
 
-    def validate(self, data):
-        if 'score' not in data:
-            raise serializers.ValidationError({
-                'score': 'Это поле обязательно'
-            })
+    def validate_score(self, value):
+        """Валидация оценки только если она передана."""
+        if value is not None and not 1 <= value <= 10:
+            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
+        return value
 
-        if self.context['request'].method == 'POST':
+    def validate(self, data):
+        """Валидация только для создания отзыва."""
+        request = self.context['request']
+
+        if request.method == 'POST':
             title = self.context['view'].get_title()
-            user = self.context['request'].user
+            user = request.user
             if Review.objects.filter(author=user, title=title).exists():
                 raise serializers.ValidationError(
                     'Вы уже оставляли отзыв на это произведение'

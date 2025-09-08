@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from reviews.models import Category, Title
 
+
 User = get_user_model()
 
 
