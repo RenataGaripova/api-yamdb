@@ -1,10 +1,13 @@
-from rest_framework import serializers
-from rest_framework.exceptions import NotFound
-from .models import CustomUser
-from django.core.mail import send_mail
-from django.conf import settings
 import random
 import string
+
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound
+
+from django.conf import settings
+from django.core.mail import send_mail
+
+from .models import CustomUser
 
 
 class SignUpSerializer(serializers.ModelSerializer):

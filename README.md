@@ -1,5 +1,4 @@
 # api_yamdb
-# api_final
 # API для Yatube.
 API для приложения YaMDb на Django Rest Framework, разработанное в рамках курса Python разработчик.
 #### Модели Yatube:

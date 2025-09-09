@@ -1,19 +1,10 @@
-from rest_framework.mixins import (
-    ListModelMixin,
-    CreateModelMixin,
-    DestroyModelMixin
-)
-from rest_framework import permissions
-from rest_framework import filters
-from rest_framework.viewsets import GenericViewSet
+from rest_framework import filters, permissions
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import OR
+from rest_framework.viewsets import GenericViewSet
 
-from users.permissions import (
-    IsAdmin,
-    IsModerator,
-    IsOwnerOrReadOnly
-)
+from users.permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly
 
 
 class ListCreateDestroyViewSet(
@@ -63,6 +54,6 @@ class OwnerModeratorAdminEditMixin:
         if self.action in ['update', 'partial_update', 'destroy']:
             return [
                 permissions.IsAuthenticated(),
-                OR(OR(IsOwnerOrReadOnly, IsModerator), IsAdmin)
+                OR(OR(IsOwnerOrReadOnly(), IsModerator()), IsAdmin())
             ]
         return super().get_permissions()
