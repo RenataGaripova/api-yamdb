@@ -37,11 +37,15 @@ cd api_yamdb
 ```
 python3 manage.py migrate
 ```
-5. Запустить проект:
+6. Создать суперпользователя:
+```
+python3 manage.py createsuperuser
+```
+7. Запустить проект:
 ```
 python3 manage.py runserver
 ```
-6. Документация доступна по адресу: http://127.0.0.1:8000/redoc/
+8. Документация доступна по адресу: http://127.0.0.1:8000/redoc/
 
 #### Импорт данных из csv:
 *   Команды для импорта данных из csv хранятся в директории: api_yamdb/api/management/commands.
