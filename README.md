@@ -52,7 +52,7 @@ python3 manage.py runserver
 *   Для каждой модели описана своя команда. Для загрузки данных используйте: python3 manage.py <import_model>
 *   Модели зависят друг от друга, стоит импортировать в таком порядке: users, categories, genres, titles, genres_titles, reviews, comments:
 ```
-python3 manage.py users
+python3 manage.py import_users
 python3 manage.py import_categories
 python3 manage.py import_genres
 python3 manage.py import_titles
