@@ -31,7 +31,7 @@ pip install -r requirements.txt
 ```
 4. Перейти в каталог проекта api_yamdb:
 ```
-cd yatube_api
+cd api_yamdb
 ```
 5. Применить миграции:
 ```
@@ -43,7 +43,21 @@ python3 manage.py runserver
 ```
 6. Документация доступна по адресу: http://127.0.0.1:8000/redoc/
 
-Для работы с postman collection:
+#### Импорт данных из csv:
+*   Команды для импорта данных из csv хранятся в директории: api_yamdb/api/management/commands.
+*   Для каждой модели описана своя команда. Для загрузки данных используйте: python3 manage.py <import_model>
+*   Модели зависят друг от друга, стоит импортировать в таком порядке: users, categories, genres, titles, genres_titles, reviews, comments:
+```
+python3 manage.py users
+python3 manage.py import_categories
+python3 manage.py import_genres
+python3 manage.py import_titles
+python3 manage.py import_genres_titles
+python3 manage.py import_reviews
+python3 manage.py import_comments
+```
+
+#### Для работы с postman collection:
 Перейти в каталог postman_collection:
 ```
 cd postman_collection

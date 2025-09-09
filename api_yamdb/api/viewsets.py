@@ -1,5 +1,9 @@
 from rest_framework import filters, permissions
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import OR
 from rest_framework.viewsets import GenericViewSet
@@ -34,6 +38,7 @@ class PermissionsGrantMixin:
 
 class ReadOnlyMixin:
     """Только чтение для всех"""
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
@@ -42,6 +47,7 @@ class ReadOnlyMixin:
 
 class AuthenticatedCreateMixin:
     """Аутентифицированные пользователи могут создавать"""
+
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.IsAuthenticated()]
@@ -50,6 +56,7 @@ class AuthenticatedCreateMixin:
 
 class OwnerModeratorAdminEditMixin:
     """Владельцы, модераторы и админы могут редактировать/удалять"""
+
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             return [
