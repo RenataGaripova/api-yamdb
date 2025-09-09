@@ -53,3 +53,7 @@ class CustomUser(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == self.Role.MODERATOR
+
+    def save(self, *args, **kwargs):
+        self.is_active = True
+        super().save(*args, **kwargs)

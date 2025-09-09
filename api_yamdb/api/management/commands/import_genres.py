@@ -6,6 +6,7 @@ from django.db.utils import IntegrityError
 
 from reviews.models import Genre
 
+
 User = get_user_model()
 
 

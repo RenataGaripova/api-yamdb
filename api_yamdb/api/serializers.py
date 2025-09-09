@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
+
 from django.db.models import Avg
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -57,6 +60,22 @@ class TitleSerializer(serializers.ModelSerializer):
         data["genre"] = GenreSerializer(instance.genre.all(), many=True).data
         return data
 
+    def validate_year(self, value):
+        """Проверка года, переданного в запросе."""
+        if value > datetime.now().year:
+            raise serializers.ValidationError(
+                "Год выпуска не может превышать текущий."
+            )
+        return value
+
+    def validate_genre(self, value):
+        """Проверка списка жанров, переданного в запросе."""
+        if value == []:
+            raise serializers.ValidationError(
+                "Список жанров пуст."
+            )
+        return value
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов."""
@@ -72,10 +91,19 @@ class ReviewSerializer(serializers.ModelSerializer):
             'pub_date'
         )
 
+    def validate_score(self, value):
+        """Валидация оценки только если она передана."""
+        if value is not None and not 1 <= value <= 10:
+            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
+        return value
+
     def validate(self, data):
-        if self.context['request'].method == 'POST':
+        """Валидация только для создания отзыва."""
+        request = self.context['request']
+
+        if request.method == 'POST':
             title = self.context['view'].get_title()
-            user = self.context['request'].user
+            user = request.user
             if Review.objects.filter(author=user, title=title).exists():
                 raise serializers.ValidationError(
                     'Вы уже оставляли отзыв на это произведение'
