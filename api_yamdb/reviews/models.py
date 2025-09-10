@@ -1,22 +1,20 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from api_yamdb.settings import AUTH_USER_MODEL
 from reviews.constants import COMMENT_STR_LENGTH, REVIEW_STR_LENGTH
 
 
-class BaseModel(models.Model):
+class NamedModel(models.Model):
     """Абстрактная модель с именем."""
     name = models.CharField(max_length=256, verbose_name='Название')
-
-    def __str__(self):
-        return self.name
 
     class Meta:
 
         abstract = True
 
 
-class Category(BaseModel):
+class Category(NamedModel):
     """Модель категории."""
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
@@ -26,7 +24,7 @@ class Category(BaseModel):
         verbose_name_plural = 'Категории'
 
 
-class Genre(BaseModel):
+class Genre(NamedModel):
     """Модель жанра."""
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
@@ -36,11 +34,10 @@ class Genre(BaseModel):
         verbose_name_plural = 'Жанры'
 
 
-class Title(BaseModel):
+class Title(NamedModel):
     """Модель произведения."""
 
     year = models.IntegerField(verbose_name='Год выпуска')
-    rating = models.IntegerField(default=1, verbose_name='Рейтинг')
     description = models.TextField(verbose_name='Описание')
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
@@ -56,7 +53,7 @@ class Title(BaseModel):
         default_related_name = 'titles'
 
 
-class Review(BaseModel):
+class Review(NamedModel):
     """Модель отзыва."""
 
     author = models.ForeignKey(
@@ -72,7 +69,6 @@ class Review(BaseModel):
         help_text='Для какого произведения отзыв'
     )
     text = models.TextField(
-        blank=False,
         verbose_name='текст',
         help_text='Текст отзыва'
     )
@@ -83,17 +79,18 @@ class Review(BaseModel):
         help_text='Дата и время создания комментария'
     )
     score = models.IntegerField(
-        choices=((i, i) for i in range(1, 11)),
         verbose_name='оценка',
         help_text='Оценка произведения',
-        blank=False,
-        null=False
+        validators=[
+            MinValueValidator(1, 'Оценка не может быть меньше 1'),
+            MaxValueValidator(10, 'Оценка не может быть больше 10')
+        ]
     )
 
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
@@ -106,7 +103,7 @@ class Review(BaseModel):
         return self.text[:REVIEW_STR_LENGTH]
 
 
-class Comment(BaseModel):
+class Comment(NamedModel):
     """Модель комментария."""
 
     author = models.ForeignKey(
@@ -122,7 +119,6 @@ class Comment(BaseModel):
         help_text='Для какого отзыва комментарий'
     )
     text = models.TextField(
-        blank=False,
         verbose_name='текст',
         help_text='Текст комментария'
     )
@@ -136,7 +132,7 @@ class Comment(BaseModel):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         default_related_name = 'comments'
 
     def __str__(self):

@@ -1,9 +1,11 @@
+from django.db.models import Avg, IntegerField, ExpressionWrapper
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 
 from api.filters import TitleFilter
+from reviews.models import Category, Genre, Review, Title
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -18,7 +20,6 @@ from api.viewsets import (
     PermissionsGrantMixin,
     ReadOnlyMixin,
 )
-from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategoryViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
@@ -35,7 +36,12 @@ class GenreViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
 
 class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     """ViewSet, реализующий CRUD к модели Title."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        rating=ExpressionWrapper(
+            Avg('reviews__score'),
+            output_field=IntegerField()
+        )
+    )
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -55,16 +61,13 @@ class ReviewViewSet(
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_title(self):
-        title_id = self.kwargs.get('title_id')
-        return get_object_or_404(Title, id=title_id)
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        title = self.get_title()
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        title = self.get_title()
-        serializer.save(author=self.request.user, title=title)
+        serializer.save(author=self.request.user, title=self.get_title())
 
 
 class CommentViewSet(
@@ -79,21 +82,19 @@ class CommentViewSet(
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_review(self):
-        title_id = self.kwargs.get('title_id')
-        review_id = self.kwargs.get('review_id')
         return get_object_or_404(
             Review,
-            id=review_id,
-            title_id=title_id
+            id=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id')
         )
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        review_id = self.kwargs.get('review_id')
-        title = get_object_or_404(Title, id=title_id)
-        review = get_object_or_404(Review, id=review_id, title=title)
-        return Comment.objects.filter(review=review)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title=get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        )
+        return review.comments.all()
 
     def perform_create(self, serializer):
-        review = self.get_review()
-        serializer.save(author=self.request.user, review=review)
+        serializer.save(author=self.request.user, review=self.get_review())

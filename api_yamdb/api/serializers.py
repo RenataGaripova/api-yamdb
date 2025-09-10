@@ -3,8 +3,6 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from django.db.models import Avg
-
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
@@ -30,7 +28,7 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug', queryset=Genre.objects.all(), many=True
     )
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(default=None, read_only=True)
 
     class Meta:
         model = Title
@@ -46,10 +44,6 @@ class TitleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'description': {'required': False}
         }
-
-    def get_rating(self, obj):
-        avg_rating = obj.reviews.aggregate(Avg('score'))['score__avg']
-        return avg_rating if avg_rating is not None else None
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -90,12 +84,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             'score',
             'pub_date'
         )
-
-    def validate_score(self, value):
-        """Валидация оценки только если она передана."""
-        if value is not None and not 1 <= value <= 10:
-            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
-        return value
 
     def validate(self, data):
         """Валидация только для создания отзыва."""
