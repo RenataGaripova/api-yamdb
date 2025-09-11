@@ -1,8 +1,9 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb.settings import AUTH_USER_MODEL
 from reviews.constants import COMMENT_STR_LENGTH, REVIEW_STR_LENGTH
-from .validators import validate_year
+from reviews.validators import validate_year
 
 
 class BaseNameModel(models.Model):
@@ -86,7 +87,6 @@ class Review(BaseNameModel):
         help_text='Для какого произведения отзыв'
     )
     text = models.TextField(
-        blank=False,
         verbose_name='текст',
         help_text='Текст отзыва'
     )
@@ -97,17 +97,18 @@ class Review(BaseNameModel):
         help_text='Дата и время создания комментария'
     )
     score = models.IntegerField(
-        choices=((i, i) for i in range(1, 11)),
         verbose_name='оценка',
         help_text='Оценка произведения',
-        blank=False,
-        null=False
+        validators=[
+            MinValueValidator(1, 'Оценка не может быть меньше 1'),
+            MaxValueValidator(10, 'Оценка не может быть больше 10')
+        ]
     )
 
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
@@ -136,7 +137,6 @@ class Comment(BaseNameModel):
         help_text='Для какого отзыва комментарий'
     )
     text = models.TextField(
-        blank=False,
         verbose_name='текст',
         help_text='Текст комментария'
     )
@@ -150,7 +150,7 @@ class Comment(BaseNameModel):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         default_related_name = 'comments'
 
     def __str__(self):

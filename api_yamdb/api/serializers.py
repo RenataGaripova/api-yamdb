@@ -6,6 +6,7 @@ from reviews.models import Category, Comment, Genre, Review, Title
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор категорий."""
+
     class Meta:
         model = Category
         fields = ('name', 'slug')
@@ -13,6 +14,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор жанров."""
+
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -20,6 +22,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для записи и обноваления произведений."""
+
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all()
     )
@@ -47,9 +50,10 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     """Сериализатор для чтения произведений."""
+
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(default=None)
+    rating = serializers.IntegerField(default=None, read_only=True)
 
     class Meta:
         model = Title
@@ -66,6 +70,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов."""
+
     author = SlugRelatedField(read_only=True, slug_field='username')
 
     class Meta:
@@ -78,14 +83,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             'pub_date'
         )
 
-    def validate_score(self, value):
-        """Валидация оценки только если она передана."""
-        if value is not None and not 1 <= value <= 10:
-            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
-        return value
-
     def validate(self, data):
         """Валидация только для создания отзыва."""
+
         request = self.context['request']
 
         if request.method == 'POST':
