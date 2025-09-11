@@ -2,6 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Avg
 
 from api.filters import TitleFilter
 from api.serializers import (
@@ -9,7 +10,8 @@ from api.serializers import (
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
 )
 from api.viewsets import (
     AuthenticatedCreateMixin,
@@ -35,12 +37,17 @@ class GenreViewSet(PermissionsGrantMixin, ListCreateDestroyViewSet):
 
 class TitleViewSet(PermissionsGrantMixin, viewsets.ModelViewSet):
     """ViewSet, реализующий CRUD к модели Title."""
-    queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(

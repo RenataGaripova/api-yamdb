@@ -2,45 +2,52 @@ from django.db import models
 
 from api_yamdb.settings import AUTH_USER_MODEL
 from reviews.constants import COMMENT_STR_LENGTH, REVIEW_STR_LENGTH
+from .validators import validate_year
 
 
-class BaseModel(models.Model):
+class BaseNameModel(models.Model):
     """Абстрактная модель с именем."""
     name = models.CharField(max_length=256, verbose_name='Название')
 
-    def __str__(self):
-        return self.name
-
     class Meta:
-
         abstract = True
 
 
-class Category(BaseModel):
+class Category(BaseNameModel):
     """Модель категории."""
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
 
+    def __str__(self):
+        return f'Категория - {self.name}'
+
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
+        ordering = ['id']
 
 
-class Genre(BaseModel):
+class Genre(BaseNameModel):
     """Модель жанра."""
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
 
+    def __str__(self):
+        return f'Жанр - {self.name}'
+
     class Meta:
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
+        ordering = ['id']
 
 
-class Title(BaseModel):
+class Title(BaseNameModel):
     """Модель произведения."""
 
-    year = models.IntegerField(verbose_name='Год выпуска')
-    rating = models.IntegerField(default=1, verbose_name='Рейтинг')
+    year = models.SmallIntegerField(
+        validators=[validate_year],
+        verbose_name='Год выпуска',
+    )
     description = models.TextField(verbose_name='Описание')
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
@@ -50,13 +57,17 @@ class Title(BaseModel):
         null=True,
     )
 
+    def __str__(self):
+        return f'Произведение - {self.name}'
+
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
+        ordering = ['year']
 
 
-class Review(BaseModel):
+class Review(BaseNameModel):
     """Модель отзыва."""
 
     author = models.ForeignKey(
@@ -106,7 +117,7 @@ class Review(BaseModel):
         return self.text[:REVIEW_STR_LENGTH]
 
 
-class Comment(BaseModel):
+class Comment(BaseNameModel):
     """Модель комментария."""
 
     author = models.ForeignKey(
