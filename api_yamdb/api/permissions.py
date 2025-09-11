@@ -20,3 +20,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
         )
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """Permission, разрешающий запись и изменение только админу."""
+    def has_permission(self, request, view):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or (request.user.is_authenticated and request.user.is_admin)
+        )

@@ -48,7 +48,10 @@ class Title(BaseNameModel):
         validators=[validate_year],
         verbose_name='Год выпуска',
     )
-    description = models.TextField(verbose_name='Описание')
+    description = models.TextField(
+        verbose_name='Описание',
+        blank=True,
+    )
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
         to=Category,

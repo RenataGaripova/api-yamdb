@@ -1,13 +1,19 @@
 from rest_framework import filters, permissions
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
+from rest_framework.mixins import (CreateModelMixin,
+                                   DestroyModelMixin,
+                                   ListModelMixin)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import OR
 from rest_framework.viewsets import GenericViewSet
 
-from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly
+from api.permissions import (
+    IsAdmin,
+    IsModerator,
+    IsOwnerOrReadOnly,
+    IsAdminOrReadOnly)
 
 
-class ListCreateDestroyViewSet(
+class CategoryGenreViewSet(
     GenericViewSet,
     ListModelMixin,
     CreateModelMixin,
@@ -19,17 +25,7 @@ class ListCreateDestroyViewSet(
     search_fields = ('name',)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
-
-
-class PermissionsGrantMixin:
-    """Миксин для определения прав пользователя."""
-
-    def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            permission_classes = [permissions.AllowAny]
-        else:
-            permission_classes = [IsAdmin]
-        return [permission() for permission in permission_classes]
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class ReadOnlyMixin:
