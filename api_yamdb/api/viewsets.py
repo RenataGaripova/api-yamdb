@@ -1,14 +1,10 @@
 from rest_framework import filters, permissions
-from rest_framework.mixins import (
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin
-)
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import OR
 from rest_framework.viewsets import GenericViewSet
 
-from users.permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly
+from .permissions import IsAdmin, IsModerator, IsOwnerOrReadOnly
 
 
 class ListCreateDestroyViewSet(
