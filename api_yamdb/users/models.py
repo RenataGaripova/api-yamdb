@@ -1,8 +1,17 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import EmailValidator
 from django.db import models
 
+from .constants import (
+    MAX_LENGTH_BIO,
+    MAX_LENGTH_EMAIL,
+    MAX_LENGTH_ROLE,
+    MAX_LENGTH_USERNAME,
+)
+from .validators import UsernameValidator
 
-class CustomUser(AbstractUser):
+
+class YamdbUser(AbstractUser):
     """Кастомная модель пользователя."""
 
     class Role(models.TextChoices):
@@ -12,31 +21,28 @@ class CustomUser(AbstractUser):
 
     username = models.CharField(
         'username',
-        max_length=150,
+        max_length=MAX_LENGTH_USERNAME,
         unique=True,
+        validators=[UsernameValidator()],
     )
 
     email = models.EmailField(
         'email address',
+        max_length=MAX_LENGTH_EMAIL,
         unique=True,
-        max_length=254,
+        validators=[EmailValidator()],
     )
     bio = models.TextField(
         'биография',
+        max_length=MAX_LENGTH_BIO,
         blank=True,
         null=True,
     )
     role = models.CharField(
         'роль',
-        max_length=20,
+        max_length=MAX_LENGTH_ROLE,
         choices=Role.choices,
         default=Role.USER,
-    )
-    confirmation_code = models.CharField(
-        'код подтверждения',
-        max_length=100,
-        blank=True,
-        null=True,
     )
 
     class Meta:
@@ -53,7 +59,3 @@ class CustomUser(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == self.Role.MODERATOR
-
-    def save(self, *args, **kwargs):
-        self.is_active = True
-        super().save(*args, **kwargs)

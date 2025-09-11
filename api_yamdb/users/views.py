@@ -4,8 +4,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import CustomUser
-from .permissions import IsAdmin
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+
+from api.permissions import IsAdmin
+
+from .models import YamdbUser
 from .serializers import (
     SignUpSerializer,
     TokenSerializer,
@@ -21,8 +27,36 @@ class SignUpView(APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
+
+        user, created = YamdbUser.objects.get_or_create(
+            email=email,
+            username=username,
+            defaults={'is_active': False}
+        )
+
+        if not created:
+            user.email = email
+            user.username = username
+            user.is_active = False
+            user.save()
+
+        confirmation_code = default_token_generator.make_token(user)
+
+        send_mail(
+            subject='Код подтверждения',
+            message=f'Ваш код: {confirmation_code}',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        return Response(
+            {'email': user.email, 'username': user.username},
+            status=status.HTTP_200_OK
+        )
 
 
 class TokenView(APIView):
@@ -32,14 +66,29 @@ class TokenView(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+
+        user = get_object_or_404(YamdbUser, username=username)
+
+        if not default_token_generator.check_token(user, confirmation_code):
+            return Response(
+                {'error': 'Неверный код подтверждения.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.is_active = True
+        user.save()
+
         token = AccessToken.for_user(user)
+
         return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet для управления пользователями."""
-    queryset = CustomUser.objects.all()
+    queryset = YamdbUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
