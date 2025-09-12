@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -7,17 +11,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.db.models import Avg
-
 from api.filters import TitleFilter
 from api.permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
     IsOwnerModeratorAdminOrReadOnly
-)    
+)
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
