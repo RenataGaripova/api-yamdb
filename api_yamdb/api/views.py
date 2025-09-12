@@ -2,7 +2,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
-
 from django.db.models import Avg
 
 from api.filters import TitleFilter
@@ -43,13 +42,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     http_method_names = ('get', 'post', 'patch', 'delete', 'head', 'options')
     permission_classes = (IsAdminOrReadOnly,)
-
-    def get_queryset(self):
-        titles = Title.objects.all()
-        if self.action != 'destroy':
-            titles = titles.annotate(
-                rating=Avg('reviews__score'))
-        return titles
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

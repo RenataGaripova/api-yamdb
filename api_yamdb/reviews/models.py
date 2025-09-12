@@ -2,16 +2,24 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb.settings import AUTH_USER_MODEL
-from reviews.constants import COMMENT_STR_LENGTH, REVIEW_STR_LENGTH
+from reviews.constants import (
+    COMMENT_STR_LENGTH,
+    REVIEW_STR_LENGTH,
+    NAME_STR_LENGTH
+)
 from reviews.validators import validate_year
 
 
 class BaseNameModel(models.Model):
     """Абстрактная модель с именем."""
-    name = models.CharField(max_length=256, verbose_name='Название')
+    name = models.CharField(
+        max_length=NAME_STR_LENGTH,
+        verbose_name='Название'
+    )
 
     class Meta:
         abstract = True
+        ordering = ('name',)
 
 
 class Category(BaseNameModel):
@@ -19,13 +27,12 @@ class Category(BaseNameModel):
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
 
-    def __str__(self):
-        return f'Категория - {self.name}'
-
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
-        ordering = ['id']
+
+    def __str__(self):
+        return f'Категория - {self.name}'
 
 
 class Genre(BaseNameModel):
@@ -33,13 +40,12 @@ class Genre(BaseNameModel):
 
     slug = models.SlugField(unique=True, verbose_name='Слаг')
 
-    def __str__(self):
-        return f'Жанр - {self.name}'
-
     class Meta:
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ['id']
+
+    def __str__(self):
+        return f'Жанр - {self.name}'
 
 
 class Title(BaseNameModel):
@@ -61,14 +67,14 @@ class Title(BaseNameModel):
         null=True,
     )
 
-    def __str__(self):
-        return f'Произведение - {self.name}'
-
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
-        ordering = ['year']
+        ordering = ('name', 'year')
+
+    def __str__(self):
+        return f'Произведение - {self.name}'
 
 
 class Review(BaseNameModel):
