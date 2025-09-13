@@ -1,10 +1,7 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import EmailValidator
 from django.db import models
 
 from .constants import (
-    MAX_LENGTH_BIO,
-    MAX_LENGTH_EMAIL,
     MAX_LENGTH_ROLE,
     MAX_LENGTH_USERNAME,
 )
@@ -28,13 +25,10 @@ class YamdbUser(AbstractUser):
 
     email = models.EmailField(
         'email address',
-        max_length=MAX_LENGTH_EMAIL,
         unique=True,
-        validators=[EmailValidator()],
     )
     bio = models.TextField(
         'биография',
-        max_length=MAX_LENGTH_BIO,
         blank=True,
         null=True,
     )
