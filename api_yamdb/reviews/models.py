@@ -3,6 +3,10 @@ from django.db import models
 
 from api_yamdb.settings import AUTH_USER_MODEL
 from reviews.constants import (
+    COMMENT_STR_LENGTH, REVIEW_STR_LENGTH,
+    MIN_VALUE_VALIDATOR, MAX_VALUE_VALIDATOR
+)
+from reviews.constants import (
     COMMENT_STR_LENGTH,
     REVIEW_STR_LENGTH,
     NAME_STR_LENGTH
@@ -106,8 +110,14 @@ class Review(BaseNameModel):
         verbose_name='оценка',
         help_text='Оценка произведения',
         validators=[
-            MinValueValidator(1, 'Оценка не может быть меньше 1'),
-            MaxValueValidator(10, 'Оценка не может быть больше 10')
+            MinValueValidator(
+                MIN_VALUE_VALIDATOR,
+                f'Оценка не может быть меньше {MIN_VALUE_VALIDATOR}'
+            ),
+            MaxValueValidator(
+                MAX_VALUE_VALIDATOR,
+                f'Оценка не может быть больше {MAX_VALUE_VALIDATOR}'
+            )
         ]
     )
 
