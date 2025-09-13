@@ -3,12 +3,10 @@ from django.db import models
 
 from api_yamdb.settings import AUTH_USER_MODEL
 from reviews.constants import (
-    COMMENT_STR_LENGTH, REVIEW_STR_LENGTH,
-    MIN_VALUE_VALIDATOR, MAX_VALUE_VALIDATOR
-)
-from reviews.constants import (
     COMMENT_STR_LENGTH,
     REVIEW_STR_LENGTH,
+    MIN_VALUE_VALIDATOR,
+    MAX_VALUE_VALIDATOR,
     NAME_STR_LENGTH
 )
 from reviews.validators import validate_year
